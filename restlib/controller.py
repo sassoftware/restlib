@@ -63,7 +63,7 @@ class _Controller(object):
                 newUrls[key] = handler(self, key, *subhandlerParams)
         return newUrls
 
-   def url(self, request, paramName=None):
+    def url(self, request, paramName=None):
         url = request.baseUrl + self._url
         if paramName:
             url = '%s/%s' % (url, paramName)
