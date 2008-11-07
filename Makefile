@@ -19,7 +19,7 @@ all-subdirs:
 
 export TOPDIR = $(shell pwd)
 
-SUBDIRS=restlib restlib_test
+SUBDIRS=restlib
 MAKEALLSUBDIRS=restlib
 
 extra_files = \
