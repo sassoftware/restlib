@@ -1,0 +1,31 @@
+#!/bin/sh -e
+curdir=`pwd`
+files=`hg diff | diffstat -l -p1 | grep -v pylint | grep '\.py$' | sed s,^,${curdir}/,g`
+files=$(for f in $files; do [ -f $f ] && echo $f; done) || true
+if [ -z "$files" ] ; then
+    exit 0;
+fi
+echo "Running pylint...."
+cd pylint;
+./run_pylint $files --files-output=n
+if [ -s pylint_errors.txt ]; then
+    while true; do
+        echo "Pylint errors were found."
+        echo -n "Commit anyway? [y/N] "
+        read yn
+        if [ -z "$yn" ]; then
+            echo "Not committing."
+            exit 1
+        fi
+        case $yn in 
+            y | Y ) echo "Committing"
+                    exit 0 ;;
+            [nN] ) echo "Errors for your files stored in `pwd`/pylint_errors.txt"
+                  exit 1 ;;
+            * ) echo "Answer y or n"
+        esac
+    done
+else
+    echo "Pylint passed."
+    exit 0
+fi

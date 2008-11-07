@@ -1,0 +1,42 @@
+[BASIC]
+# Regular expression which should only match correct class names
+class-rgx=_?[A-Z][a-zA-Z0-9]+$
+
+# Regular expression which should only match correct function names
+function-rgx=[a-z_][a-zA-Z0-9]*$
+
+# Regular expression which should only match correct function names
+name-rgx=[a-z_][a-zA-Z0-9]*$
+
+# Regular expression which should only match correct method names
+method-rgx=([a-z_][a-zA-Z0-9]*)|(__[a-z][a-zA-Z0-9]+__)$
+
+# Regular expression which should only match correct argument names
+argument-rgx=[a-z][a-zA-Z0-9]*$
+
+# Regular expression which should only match correct variable names
+variable-rgx=[a-z][a-zA-Z0-9]*$
+
+# Attributes can be camel case too
+attr-rgx=[a-z_][a-zA-Z0-9_]{2,30}$
+
+# Good variable names which should always be accepted, separated by a comma
+good-names=i,j,k,n,v,f,ex,Run,_,db,cu,__
+
+
+
+
+[REPORTS]
+files-output=yes
+reports=yes
+include-ids=yes
+
+[MESSAGES CONTROL]
+# R0201: method could be a function
+# R0903: Too few public methods
+# C0111: Missing docstring
+disable-msg=W0142,I0011,R0903,C0111,W0212
+
+[MASTER]
+load-plugins=pylint_plugins.epydoc_checker
+load-plugins=pylint_plugins.publicapi_checker
