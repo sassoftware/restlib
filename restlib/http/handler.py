@@ -20,7 +20,7 @@ class ExceptionCallback(object):
     def processException(self, request, excClass, exception, tb):
         import traceback
         content = ['%s: %s\nTraceback:\n' % (excClass.__name__, exception)]
-        content.append('<br/>'.join(traceback.format_tb(tb)))
+        content.extend(traceback.format_tb(tb))
         return Response(status=500, content=''.join(content))
 
 class HttpHandler(object):
@@ -48,7 +48,6 @@ class HttpHandler(object):
                 getattr(self, '_' + attr).append(method)
 
     def getResponse(self, request):
-        request.rootController = self._controller
         response = self.getInitialResponse(request)
         # callbacks called first before the method get called
         # last afterwards
@@ -80,8 +79,7 @@ class HttpHandler(object):
             response = Response(status=404)
         except Exception, e:
             ei = sys.exc_info()
-            if self._logger:
-                self._logger.error("500", exc_info = ei)
+            self._logger.error("500", exc_info = ei)
             # callbacks called first before the method get called
             # last afterwards
             for processMethod in reversed(self._processException):

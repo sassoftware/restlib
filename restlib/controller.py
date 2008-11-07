@@ -24,10 +24,8 @@ class _Controller(object):
         self.parent = parent
         if parent:
             self._url = '%s/%s' % (parent._url, path)
-            self.root = parent.root
         else:
             self._url = ''
-            self.root = self
 
         if self.modelName:
             self.baseMethods = dict(POST='create',

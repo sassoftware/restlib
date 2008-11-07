@@ -20,8 +20,6 @@ class Request(object):
         self._req = req
         self.path = self._getFullPath()
         # Path only (no query part)
-        if path.startswith('/'):
-            path = path[1:]
         self.unparsedPath = path
 
         # Everything before the url we're parsing
