@@ -79,13 +79,13 @@ class HttpHandler(object):
             response = Response(status=404)
         except Exception, e:
             ei = sys.exc_info()
-            self._logger.error("500", exc_info = ei)
             # callbacks called first before the method get called
             # last afterwards
             for processMethod in reversed(self._processException):
                 response = processMethod(request, *ei)
                 if response:
                     return response
+            self._logger.error("500", exc_info = ei)
             return Response(status=500)
         return response
 
