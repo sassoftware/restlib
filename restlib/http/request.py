@@ -20,10 +20,16 @@ class Request(object):
         self._req = req
         self.path = self._getFullPath()
         # Path only (no query part)
+        if path.startswith('/'):
+            path = path[1:]
         self.unparsedPath = path
 
         # Everything before the url we're parsing
-        self.basePath = self.path[:-len(self.unparsedPath)]
+        if self.unparsedPath:
+            # watch out for empty unparsedPath -- string[:-0] == ''
+            self.basePath = self.path[:-len(self.unparsedPath)]
+        else:
+            self.basePath = self.path
         self.baseUrl = self._getBaseUrl()
         self.host = self._getHost()
         self.headers = self._getHeaders()

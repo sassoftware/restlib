@@ -24,8 +24,10 @@ class _Controller(object):
         self.parent = parent
         if parent:
             self._url = '%s/%s' % (parent._url, path)
+            self.root = parent.root
         else:
             self._url = ''
+            self.root = self
 
         if self.modelName:
             self.baseMethods = dict(POST='create',
@@ -61,11 +63,23 @@ class _Controller(object):
                 newUrls[key] = handler(self, key, *subhandlerParams)
         return newUrls
 
-    def url(self, request, paramName=None):
-        url = request.baseUrl + self._url
-        if paramName:
-            url = '%s/%s' % (url, paramName)
-        return url
+    def url(self, request, location, *args):
+        root = self.root
+        params = list(args)
+        baseUrl = request.baseUrl
+        if baseUrl.endswith('/'):
+            baseUrl = baseUrl[:-1]
+        url = [baseUrl]
+        location = location.split('.')
+        while location:
+            if root.modelName:
+                url.append(params[0])
+                params = params[1:]
+            url.append(location[0])
+            root = root.urls[location[0]]
+            location = location[1:]
+        url.extend(params)
+        return '/'.join(url) + '/'
 
     def splitId(self, url):
         match = re.match('/?(%s)/?(.*|)' % self.modelRegex, url)

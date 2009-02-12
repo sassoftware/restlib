@@ -20,7 +20,9 @@ class Response(object):
 
     def __init__(self, content='', content_type='text/html', status=None,
                  message=None, headers=None):
-        self.response = [content]
+        if isinstance(content, str):
+            content = [content]
+        self.response = content
         if headers is None:
             headers = {}
         self.headers = headers
