@@ -20,7 +20,7 @@ class ExceptionCallback(object):
     def processException(self, request, excClass, exception, tb):
         import traceback
         content = ['%s: %s\nTraceback:\n' % (excClass.__name__, exception)]
-        content.append('<br/>'.join(traceback.format_tb(tb)))
+        content.append(''.join(traceback.format_tb(tb)))
         return Response(status=500, content=''.join(content))
 
 class HttpHandler(object):

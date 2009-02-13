@@ -79,7 +79,7 @@ class _Controller(object):
             root = root.urls[location[0]]
             location = location[1:]
         url.extend(params)
-        return '/'.join(url) + '/'
+        return '/'.join(url)
 
     def splitId(self, url):
         match = re.match('/?(%s)/?(.*|)' % self.modelRegex, url)
