@@ -65,7 +65,7 @@ class ModPythonHttpHandler(handler.HttpHandler):
             req.headers_out[header] = str(value)
         req.status = response.status
         req.send_http_header()
-        if response.status == 200:
+        if response.status in (200, 401):
             req.write(response.get())
         else:
             txt = response.get()
