@@ -65,5 +65,12 @@ class ModPythonHttpHandler(handler.HttpHandler):
             req.headers_out[header] = str(value)
         req.status = response.status
         req.send_http_header()
-        req.write(response.get())
-        return apache.OK
+        if response.status == 200:
+            req.write(response.get())
+        else:
+            txt = response.get()
+            if not txt:
+                # Use apache's default status pages.
+                return response.status
+            req.write(txt)
+        return apache.DONE
