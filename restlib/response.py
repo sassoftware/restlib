@@ -42,9 +42,6 @@ class Response(object):
         return sum([len(x) for x in self.response])
 
     def write(self, txt):
-        if not isinstance(txt, str):
-            import epdb
-            epdb.st()
         self.response.append(txt)
 
     def redirect(self, url, permanent=False):
