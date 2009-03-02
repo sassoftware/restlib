@@ -32,13 +32,14 @@ class Client(object):
     HTTPConnection = httplib.HTTPConnection
     HTTPSConnection = httplib.HTTPSConnection
 
-    def __init__(self, url):
+    def __init__(self, url, headers = None):
         self.scheme = None
         self.user = None
         self.passwd = None
         self.host = None
         self.port = None
         self.path = None
+        self.headers = headers or {}
 
         urltype, url = urllib.splittype(url)
         if urltype:
@@ -72,13 +73,13 @@ class Client(object):
         return self
 
     def request(self, method, body=None, headers=None):
-        if headers is None:
-            headers = {}
+        hdrs = self.headers.copy()
+        hdrs.update(headers or {})
         if self.user is not None and self.passwd is not None:
             user_pass = base64.b64encode('%s:%s' % (self.user, self.passwd))
             headers['Authorization'] = 'Basic %s' % user_pass
         self._connection.request(method, self.path, body = body,
-                                 headers = headers)
+                                 headers = hdrs)
         resp = self._connection.getresponse()
         if resp.status != 200:
             raise ResponseError(resp.status, resp.reason, resp.msg, resp)
