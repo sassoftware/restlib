@@ -77,7 +77,7 @@ class Client(object):
         hdrs.update(headers or {})
         if self.user is not None and self.passwd is not None:
             user_pass = base64.b64encode('%s:%s' % (self.user, self.passwd))
-            headers['Authorization'] = 'Basic %s' % user_pass
+            hdrs['Authorization'] = 'Basic %s' % user_pass
         self._connection.request(method, self.path, body = body,
                                  headers = hdrs)
         resp = self._connection.getresponse()
