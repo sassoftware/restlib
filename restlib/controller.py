@@ -12,6 +12,7 @@
 # full details.
 #
 import re
+import urllib
 
 class _Controller(object):
 
@@ -82,7 +83,7 @@ class _Controller(object):
         return '/'.join(url)
 
     def splitId(self, url):
-        match = re.match('/?(%s)/?(.*|)' % self.modelRegex, url)
+        match = re.match('/?(%s)/?(.*|)' % self.modelRegex, urllib.unquote(url))
         if match:
             return match.groups()
         raise NotImplementedError
@@ -141,6 +142,9 @@ class _Controller(object):
     def getNextController(self, method, subDir, url, args, kwargs):
         if self.urls and subDir in self.urls:
             controller = self.urls[subDir]
+            if isinstance(controller, dict):
+                if method in controller:
+                    controller = controller[method]
             if hasattr(controller, 'getController'):
                 return controller.getController(method, url, args, kwargs)
             if hasattr(controller, '__call__'):
