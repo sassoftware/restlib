@@ -49,6 +49,9 @@ class Request(object):
         method = self.POST.pop('_method', method)
         self.method = method
 
+    def getHostWithProtocol(self):
+        return self.baseUrl[:-len(self.basePath)]
+
     def _getBaseUrl(self, url):
         raise NotImplementedError()
 
