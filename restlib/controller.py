@@ -81,7 +81,7 @@ class _Controller(object):
             location = location[1:]
         if params:
             url.extend(params)
-        else:
+        elif root.modelName:
             # no model or we're getting the index.
             url.append('')
         return '/'.join(url)
