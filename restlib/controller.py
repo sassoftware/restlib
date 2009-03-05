@@ -79,7 +79,11 @@ class _Controller(object):
             url.append(location[0])
             root = root.urls[location[0]]
             location = location[1:]
-        url.extend(params)
+        if params:
+            url.extend(params)
+        else:
+            # no model or we're getting the index.
+            url.append('')
         return '/'.join(url)
 
     def splitId(self, url):
