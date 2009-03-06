@@ -81,7 +81,7 @@ class _Controller(object):
             location = location[1:]
         if params:
             url.extend(params)
-        elif hastattr(root, 'modelName') and root.modelName:
+        elif hasattr(root, 'modelName') and root.modelName:
             # no model or we're getting the index.
             url.append('')
         return '/'.join(url)
