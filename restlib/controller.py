@@ -71,7 +71,8 @@ class _Controller(object):
         if baseUrl.endswith('/'):
             baseUrl = baseUrl[:-1]
         url = [baseUrl]
-        location = location.split('.')
+        if location:
+            location = location.split('.')
         while location:
             if root.modelName:
                 url.append(params[0])
