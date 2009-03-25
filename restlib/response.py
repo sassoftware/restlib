@@ -44,7 +44,7 @@ class Response(object):
     def write(self, txt):
         self.response.append(txt)
 
-    def redirect(self, url, permanent=False):
+    def redirect(self, url, permanent=False, status=None):
         self.headers['location'] = url
         if permanent:
             self.status = 301
@@ -55,3 +55,9 @@ class RedirectResponse(Response):
     def __init__(self, url, permanent=False):
         Response.__init__(self)
         self.redirect(url, permanent=permanent)
+
+class CreatedResponse(Response):
+
+    def __init__(self, url):
+        self.headers['location'] = url
+        self.status = 201
