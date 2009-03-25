@@ -26,9 +26,6 @@ class BasicAuthCallback(object):
 
     def processRequest(self, request):
         auth = self.getAuth(request)
-        if not auth:
-            # require authentication
-            return response.Response(status=403)
         request.auth = auth
         return self.processAuth(request)
 
