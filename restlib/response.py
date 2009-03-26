@@ -44,20 +44,26 @@ class Response(object):
     def write(self, txt):
         self.response.append(txt)
 
-    def redirect(self, url, permanent=False, status=None):
+    def redirect(self, url, status=None):
         self.headers['location'] = url
-        if permanent:
-            self.status = 301
-        else:
-            self.status = 302
+        if status:
+            self.status = status
 
 class RedirectResponse(Response):
-    def __init__(self, url, permanent=False):
-        Response.__init__(self)
-        self.redirect(url, permanent=permanent)
-
-class CreatedResponse(Response):
+    status = 302
 
     def __init__(self, url):
-        self.headers['location'] = url
-        self.status = 201
+        Response.__init__(self)
+        self.redirect(url)
+
+
+class PermanentRedirectResponse(RedirectResponse):
+    status = 301
+
+
+class SeeOtherResponse(RedirectResponse):
+    status = 303
+
+
+class CreatedResponse(RedirectResponse):
+    status = 201
