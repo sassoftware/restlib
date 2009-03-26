@@ -73,18 +73,26 @@ class _Controller(object):
         url = [baseUrl]
         if location:
             location = location.split('.')
+
+        def extend(x):
+            if isinstance(x, unicode):
+                x = x.encode('utf8')
+            url.append(urllib.quote(x))
+
         while location:
             if root.modelName:
-                url.append(params[0])
+                extend(params[0])
                 params = params[1:]
-            url.append(location[0])
+            extend(location[0])
             root = root.urls[location[0]]
             location = location[1:]
+
         if params:
-            url.extend(params)
-        elif hasattr(root, 'modelName') and root.modelName:
+            for param in params:
+                extend(param)
+        elif getattr(root, 'modelName', None):
             # no model or we're getting the index.
-            url.append('')
+            extend('')
         return '/'.join(url)
 
     def splitId(self, url):
