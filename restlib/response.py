@@ -12,6 +12,7 @@
 # full details.
 #
 import BaseHTTPServer
+import os
 
 
 class Response(object):
@@ -32,6 +33,7 @@ class Response(object):
         if message is None:
             message = self.responses[self.status][0]
         self.message = message
+        self.path = None
 
     def get(self):
         return ''.join(self.response)
@@ -48,6 +50,10 @@ class Response(object):
         self.headers['location'] = url
         if status:
             self.status = status
+
+    def getFilePath(self):
+        return self.path
+
 
 class RedirectResponse(Response):
     status = 302
@@ -67,3 +73,17 @@ class SeeOtherResponse(RedirectResponse):
 
 class CreatedResponse(RedirectResponse):
     status = 201
+
+
+class FileResponse(Response):
+
+    def getLength(self):
+        # sendfile sends everything, this makes us work the same on
+        # simplehttp server
+        return os.stat(self.path).st_size
+
+    def __init__(self, path=None, content_type='application/octet-stream',
+                 status=None, message=None, headers=None):
+        Response.__init__(self, content_type=content_type, status=status,
+                          message=message, headers=headers)
+        self.path = path

@@ -12,6 +12,7 @@
 # full details.
 #
 import BaseHTTPServer
+import os
 import socket
 import sys
 
@@ -67,9 +68,21 @@ class SimpleHttpHandler(handler.HttpHandler):
         for header, value in response.headers.items():
             simple_req.send_header(header, value)
         length = response.getLength()
-        simple_req.send_header("content-length", str(length))
+        if length is not None:
+            simple_req.send_header("content-length", str(length))
         simple_req.end_headers()
-        simple_req.wfile.write(response.get())
+        if response.getFilePath():
+            BFSIZE = 65536
+            fd = os.open(response.getFilePath(), os.O_RDONLY)
+            try:
+                s = os.read(fd, BFSIZE)
+                while s:
+                    simple_req.wfile.write(s)
+                    s = os.read(fd, BFSIZE)
+            finally:
+                os.close(fd)
+        else:
+            simple_req.wfile.write(response.get())
 
         simple_req.wfile.flush()
         simple_req.connection.shutdown(socket.SHUT_WR)

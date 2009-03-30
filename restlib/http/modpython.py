@@ -58,7 +58,9 @@ class ModPythonHttpHandler(handler.HttpHandler):
     def handle(self, req, url):
         request = self.requestClass(req, url)
         response = self.getResponse(request)
-        response.headers['content-length'] = str(response.getLength())
+        length = response.getLength()
+        if length is not None:
+            response.headers['content-length'] = str(response.getLength())
         contentType = response.headers.pop('content-type')
         req.content_type = contentType
         for header, value in response.headers.items():
@@ -66,7 +68,10 @@ class ModPythonHttpHandler(handler.HttpHandler):
         req.status = response.status
         req.send_http_header()
         if response.status in (200, 401):
-            req.write(response.get())
+            if response.getFilePath():
+                req.sendfile(response.getFilePath())
+            else:
+                req.write(response.get())
         else:
             txt = response.get()
             if not txt:
