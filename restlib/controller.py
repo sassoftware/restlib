@@ -74,10 +74,19 @@ class _Controller(object):
         if location:
             location = location.split('.')
 
-        def extend(x):
+        def toUtf(x):
             if isinstance(x, unicode):
-                x = x.encode('utf8')
-            url.append(urllib.quote(x))
+                return x.encode('utf8')
+
+            return x
+
+        def extend(x):
+            if type(x) is list:
+                url[-1] += "?"
+                url[-1] += ("&".join( "%s=%s" %
+                        (k, urllib.quote(toUtf(v))) for (k, v) in x))
+            else:
+                url.append(urllib.quote(toUtf(x)))
 
         while location:
             if root.modelName:
