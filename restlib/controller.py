@@ -65,44 +65,7 @@ class _Controller(object):
         return newUrls
 
     def url(self, request, location, *args):
-        root = self.root
-        params = list(args)
-        baseUrl = request.baseUrl
-        if baseUrl.endswith('/'):
-            baseUrl = baseUrl[:-1]
-        url = [baseUrl]
-        if location:
-            location = location.split('.')
-
-        def toUtf(x):
-            if isinstance(x, unicode):
-                return x.encode('utf8')
-
-            return x
-
-        def extend(x):
-            if type(x) is list:
-                url[-1] += "?"
-                url[-1] += ("&".join( "%s=%s" %
-                        (k, urllib.quote(toUtf(v))) for (k, v) in x))
-            else:
-                url.append(urllib.quote(toUtf(x)))
-
-        while location:
-            if root.modelName:
-                extend(params[0])
-                params = params[1:]
-            extend(location[0])
-            root = root.urls[location[0]]
-            location = location[1:]
-
-        if params:
-            for param in params:
-                extend(param)
-        elif getattr(root, 'modelName', None):
-            # no model or we're getting the index.
-            extend('')
-        return '/'.join(url)
+        return request.url(location, *args)
 
     def splitId(self, url):
         match = re.match('/?(%s)/?(.*|)' % self.modelRegex, urllib.unquote(url))
