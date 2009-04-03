@@ -60,7 +60,7 @@ class ModPythonHttpHandler(handler.HttpHandler):
         response = self.getResponse(request)
         length = response.getLength()
         if length is not None:
-            response.headers['content-length'] = str(response.getLength())
+            response.headers['content-length'] = str(length)
         contentType = response.headers.pop('content-type')
         req.content_type = contentType
         for header, value in response.headers.items():
