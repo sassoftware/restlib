@@ -106,7 +106,9 @@ class Request(object):
     def url(self, location, *args, **kw):
         root = self.rootController
         params = list(args)
-        baseUrl = self.baseUrl
+        baseUrl = kw.pop('baseUrl', None)
+        if baseUrl is None:
+            baseUrl = self.baseUrl
         if baseUrl.endswith('/'):
             baseUrl = baseUrl[:-1]
         url = [baseUrl]
