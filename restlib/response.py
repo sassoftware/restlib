@@ -60,6 +60,8 @@ class RedirectResponse(Response):
 
     def __init__(self, url):
         Response.__init__(self)
+        self.headers['location'] = url
+        self.status = 201
         self.redirect(url)
 
 
