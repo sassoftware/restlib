@@ -33,6 +33,7 @@ class Request(object):
         self.baseUrl = self._getBaseUrl()
         self.host = self._getHost()
         self.headers = self._getHeaders()
+        self.remote = self._getRemote()
 
         method = self._getHttpMethod()
 
@@ -65,6 +66,10 @@ class Request(object):
         raise NotImplementedError()
 
     def _getReadFd(self):
+        raise NotImplementedError()
+
+    def _getRemote(self):
+        "Return the C{(address, port)} of the remote host."
         raise NotImplementedError()
 
     def _getPostData(self):

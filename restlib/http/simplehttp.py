@@ -36,6 +36,10 @@ class SimpleHttpRequest(request.Request):
     def _getReadFd(self):
         return self._req.rfile
 
+    def _getRemote(self):
+        "Return the C{(address, port)} of the remote host."
+        return self._req.client_address
+
     def _getFullPath(self):
         return self._req.path
 
@@ -55,8 +59,6 @@ class SimpleHttpRequest(request.Request):
     def getContentLength(self):
         return int(self.headers.get('content-length', 0))
 
-    def getRequestIP(self):
-        return self._req.client_address[0]
 
 class SimpleHttpHandler(handler.HttpHandler):
     requestClass = SimpleHttpRequest

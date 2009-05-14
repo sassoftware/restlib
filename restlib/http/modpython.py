@@ -37,6 +37,10 @@ class ModPythonRequest(request.Request):
     def _getReadFd(self):
         return self._req
 
+    def _getRemote(self):
+        "Return the C{(address, port)} of the remote host."
+        return self._req.connection.remote_addr
+
     def _getUri(self):
         return self._req.uri[len(self.basePath):]
 
