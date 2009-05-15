@@ -12,9 +12,11 @@
 # full details.
 #
 import cgi
+import os
 import urllib
 
 class Request(object):
+    rootController = None
 
     def __init__(self, req, path):
         self._req = req
@@ -31,6 +33,7 @@ class Request(object):
         else:
             self.basePath = self.path
         self.baseUrl = self._getBaseUrl()
+        self.thisUrl = os.path.join(self.baseUrl, self.unparsedPath)
         self.host = self._getHost()
         self.headers = self._getHeaders()
         self.remote = self._getRemote()
@@ -149,5 +152,3 @@ class Request(object):
             # no model or we're getting the index.
             extend('')
         return '/'.join(url)
-
-
