@@ -12,9 +12,11 @@
 # full details.
 #
 import cgi
+import os
 import urllib
 
 class Request(object):
+    rootController = None
 
     def __init__(self, req, path):
         self._req = req
@@ -31,8 +33,10 @@ class Request(object):
         else:
             self.basePath = self.path
         self.baseUrl = self._getBaseUrl()
+        self.thisUrl = os.path.join(self.baseUrl, self.unparsedPath)
         self.host = self._getHost()
         self.headers = self._getHeaders()
+        self.remote = self._getRemote()
 
         method = self._getHttpMethod()
 
@@ -65,6 +69,10 @@ class Request(object):
         raise NotImplementedError()
 
     def _getReadFd(self):
+        raise NotImplementedError()
+
+    def _getRemote(self):
+        "Return the C{(address, port)} of the remote host."
         raise NotImplementedError()
 
     def _getPostData(self):
@@ -144,5 +152,3 @@ class Request(object):
             # no model or we're getting the index.
             extend('')
         return '/'.join(url)
-
-

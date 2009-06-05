@@ -32,6 +32,8 @@ class _Controller(object):
 
         if self.modelName:
             self.baseMethods = dict(POST='create',
+                                    DELETE='destroy_all',
+                                    PUT='update_all',
                                     GET='index')
             self.modelMethods = dict(POST='process',
                                 GET='get',
