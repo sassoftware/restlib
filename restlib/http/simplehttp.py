@@ -84,7 +84,12 @@ class SimpleHttpHandler(handler.HttpHandler):
             finally:
                 os.close(fd)
         else:
-            simple_req.wfile.write(response.get())
+            rawResponse = response.get()
+            if type(rawResponse) is str:
+                simple_req.wfile.write(rawResponse)
+            else:
+                for rawStr in rawResponse:
+                    simple_req.wfile.write(rawStr)
 
         simple_req.wfile.flush()
         simple_req.connection.shutdown(socket.SHUT_WR)
