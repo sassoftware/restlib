@@ -32,7 +32,7 @@ class ModPythonRequest(request.Request):
         return self._req.headers_in['host'].split(':')[0]
 
     def _getFullPath(self):
-        return self._req.unparsed_uri
+        return self._req.uri
 
     def _getReadFd(self):
         return self._req
