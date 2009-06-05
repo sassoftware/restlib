@@ -75,16 +75,17 @@ class ModPythonHttpHandler(handler.HttpHandler):
             if response.getFilePath():
                 req.sendfile(response.getFilePath())
             else:
-                req.write(response.get())
+                rawResponse = response.get()
+                if type(rawResponse) is str:
+                    req.write(rawResponse)
+                else:
+                    for rawStr in rawResponse:
+                        req.write(rawStr)
         else:
             rawResponse = response.get()
             if not rawResponse:
                 # Use apache's default status pages.
                 return response.status
-            if type(rawResponse) is str:
-                req.write(rawResponse)
-            else:
-                for rawStr in rawResponse:
-                    req.write(rawStr)
+            req.write(rawResponse)
 
         return apache.DONE
