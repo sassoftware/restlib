@@ -73,9 +73,14 @@ class ModPythonHttpHandler(handler.HttpHandler):
             else:
                 req.write(response.get())
         else:
-            txt = response.get()
-            if not txt:
+            rawResponse = response.get()
+            if not rawResponse:
                 # Use apache's default status pages.
                 return response.status
-            req.write(txt)
+            if type(rawResponse) is str:
+                req.write(rawResponse)
+            else:
+                for rawStr in rawResponse:
+                    req.write(rawStr)
+
         return apache.DONE
