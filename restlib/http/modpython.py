@@ -32,7 +32,27 @@ class ModPythonRequest(request.Request):
         return self._req.headers_in['host'].split(':')[0]
 
     def _getFullPath(self):
-        return self._req.uri
+        """
+        Returns the entire, "unparsed" handler path of the request, excluding
+        any leading schema or host bits.
+        """
+        uri = self._req.unparsed_uri
+
+        if uri.startswith('/'):
+            # e.g. /foo/bar?baz
+            # This is the normal case.
+            return uri
+
+        if '://' in uri:
+            # e.g. http://somehost/foo/bar?baz
+            # Appears in some cases involving proxies.
+            if uri.count('/') < 3:
+                # http://somehost
+                uri += '/'
+            return '/' + uri.split('/', 3)[3]
+
+        # No idea what it is, but might as well return it anyway.
+        return uri
 
     def _getReadFd(self):
         return self._req
