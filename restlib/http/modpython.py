@@ -19,6 +19,10 @@ except ImportError:
 from restlib.http import handler, request
 
 class ModPythonRequest(request.Request):
+    def _setProperties(self):
+        self.headers = self._req.headers_in
+        self.method = self._req.method
+        self.remote = self._req.connection.remote_addr
 
     def read(self, size=-1):
         if size == -1:
@@ -28,20 +32,12 @@ class ModPythonRequest(request.Request):
     def getContentLength(self):
         return int(self.headers.get('content-length', 0))
 
-    def _getHost(self):
-        return self._req.headers_in['host'].split(':')[0]
-
-    def _getFullPath(self):
+    def _getRawPath(self):
         """
-        Returns the entire, "unparsed" handler path of the request, excluding
-        any leading schema or host bits.
+        Returns the entire, raw request URI, split into two parts. The first
+        part is the schema, host, and port, and the second part is the path.
         """
         uri = self._req.unparsed_uri
-
-        if uri.startswith('/'):
-            # e.g. /foo/bar?baz
-            # This is the normal case.
-            return uri
 
         if '://' in uri:
             # e.g. http://somehost/foo/bar?baz
@@ -49,38 +45,30 @@ class ModPythonRequest(request.Request):
             if uri.count('/') < 3:
                 # http://somehost
                 uri += '/'
-            return '/' + uri.split('/', 3)[3]
+            uri = '/' + uri.split('/', 3)[3]
+        else:
+            # e.g. /foo/bar?baz
+            # This is the normal case.
+            if not uri.startswith('/'):
+                uri = '/' + uri
 
-        # No idea what it is, but might as well return it anyway.
-        return uri
+        return self._getHostRootURL(), uri
 
     def _getReadFd(self):
         return self._req
 
-    def _getRemote(self):
-        "Return the C{(address, port)} of the remote host."
-        return self._req.connection.remote_addr
-
-    def _getUri(self):
-        return self._req.uri[len(self.basePath):]
-
-    def _getHeaders(self):
-        return self._req.headers_in
-
-    def _getHttpMethod(self):
-        return self._req.method
-
-    def _getBaseUrl(self):
+    def _getHostRootURL(self):
+        "Internal function to construct the host URL prefix."
         secure = (self._req.subprocess_env.get('HTTPS', 'off').lower() == 'on')
         proto = (secure and "https") or "http"
-        return "%s://%s%s" % (proto, self._req.headers_in['Host'],
-                              self.basePath)
+        return "%s://%s" % (proto, self._req.headers_in['Host'])
+
 
 class ModPythonHttpHandler(handler.HttpHandler):
     requestClass = ModPythonRequest
 
-    def handle(self, req, url):
-        request = self.requestClass(req, url)
+    def handle(self, req, pathPrefix=''):
+        request = self.requestClass(req, pathPrefix)
         response = self.getResponse(request)
         length = response.getLength()
         if length is not None:

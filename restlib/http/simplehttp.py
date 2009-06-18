@@ -21,35 +21,24 @@ from restlib.http import handler, request
 from restlib.response import Response
 
 class SimpleHttpRequest(request.Request):
-    def _getHttpMethod(self):
-        return self._req.command
-
-    def _getHost(self):
-        if 'host' in self._req.headers:
-            return self._req.headers['host'].split(':')[0]
-        else:
-            return self._req.server.server_name
-
-    def _getHeaders(self):
-        return self._req.headers
+    def _setProperties(self):
+        self.headers = self._req.headers
+        self.method = self._req.command
+        self.remote = self._req.client_address
 
     def _getReadFd(self):
         return self._req.rfile
 
-    def _getRemote(self):
-        "Return the C{(address, port)} of the remote host."
-        return self._req.client_address
+    def _getRawPath(self):
+        return self._getHostRootURL(), self._req.path
 
-    def _getFullPath(self):
-        return self._req.path
-
-    def _getBaseUrl(self):
+    def _getHostRootURL(self):
         if 'host' not in self._req.headers:
             host = '%s:%s' % (self._req.server.server_name,
                              self._req.server.server_port)
         else:
             host = self._req.headers['host']
-        return 'http://%s%s' % (host, self.basePath)
+        return 'http://%s' % (host,)
 
     def read(self, size=-1):
         if size == -1:
@@ -63,8 +52,8 @@ class SimpleHttpRequest(request.Request):
 class SimpleHttpHandler(handler.HttpHandler):
     requestClass = SimpleHttpRequest
 
-    def handle(self, simple_req, url):
-        request = self.requestClass(simple_req, url)
+    def handle(self, simple_req, pathPrefix=''):
+        request = self.requestClass(simple_req, pathPrefix)
         response = self.getResponse(request)
         simple_req.send_response(response.status, response.message)
         for header, value in response.headers.items():

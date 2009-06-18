@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008 rPath, Inc.
+# Copyright (c) 2008-2009 rPath, Inc.
 #
 # This program is distributed under the terms of the Common Public License,
 # version 1.0. A copy of this license should have been distributed with this
@@ -11,68 +11,91 @@
 # or fitness for a particular purpose. See the Common Public License for
 # full details.
 #
+
 import cgi
+import logging
 import os
 import urllib
 
+log = logging.getLogger(__name__)
+
+
 class Request(object):
+    # The root controller currently serving this request. This is set
+    # externally by the handler.
     rootController = None
 
-    def __init__(self, req, path):
+    # The URL prefix at which the controller appears to be rooted.
+    baseUrl = None
+
+    # The path without any prefix or query arguments.
+    path = None
+
+    # Same as above, but elements are removed from the left after a controller
+    # is assigned to the request. In other words, this is the unstructured
+    # remainder of the path.
+    unparsedPath = None
+
+    # The full, (approximately) original URL of this request.
+    thisUrl = None
+
+    # Other interesting attributes
+    headers = None
+    method = None
+    remote = None
+
+    # Query arguments
+    GET = POST = None
+
+    def __init__(self, req, pathPrefix=''):
         self._req = req
-        self.path = self._getFullPath()
-        # Path only (no query part)
+
+        rawBase, rawPath = self._getRawPath()
+
+        # Normalize and de-prefix the path
+        path = rawPath
+        if path.startswith(pathPrefix):
+            path = path[len(pathPrefix):]
+        else:
+            log.warning("Path %r does not start with specified prefix %r",
+                    path, pathPrefix)
         if path.startswith('/'):
             path = path[1:]
-        self.unparsedPath = path
 
-        # Everything before the url we're parsing
-        if self.unparsedPath:
-            # watch out for empty unparsedPath -- string[:-0] == ''
-            self.basePath = self.path[:-len(self.unparsedPath)]
-        else:
-            self.basePath = self.path
-        self.baseUrl = self._getBaseUrl()
-        self.thisUrl = os.path.join(self.baseUrl, self.unparsedPath)
-        self.host = self._getHost()
-        self.headers = self._getHeaders()
-        self.remote = self._getRemote()
+        # Parse and remove query arguments.
+        self.path, self.GET = self._splitQuery(path)
+        self.unparsedPath = self.path
 
-        method = self._getHttpMethod()
+        self.baseUrl = rawBase + pathPrefix
+        self.thisUrl = rawBase + rawPath
 
-        # _getGetData also sets self.path if it contains a query string
-        self.GET = self._getGetData()
-        if method != 'GET':
+        # Fill out the rest of the attributes (headers, method, remote, etc.)
+        self._setProperties()
+
+        if self.getContentLength():
             self.POST = self._getPostData()
         else:
             self.POST = {}
 
         # If the method was passed in the URL as ?_method=GET, then override
         # the request's method
-        method = self.GET.pop('_method', method)
-        method = self.POST.pop('_method', method)
-        self.method = method
+        if '_method' in self.GET:
+            self.method = self.GET.pop('_method')
 
-    def getHostWithProtocol(self):
-        return self.baseUrl[:-len(self.basePath)]
+        #log.info("Request:\n" + "\n".join("  %s: %r" % x for x in self.__dict__.items()))
 
-    def _getBaseUrl(self, url):
+    def _setProperties(self):
+        "Fill out extra attributes from the request."
         raise NotImplementedError()
 
-    def _getHttpMethod(self):
-        raise NotImplementedError()
-
-    def _getHost(self):
-        raise NotImplementedError()
-
-    def _getHeaders(self):
+    def _getRawPath(self):
+        "Return the current URL of the request, split into host and path."
         raise NotImplementedError()
 
     def _getReadFd(self):
         raise NotImplementedError()
 
-    def _getRemote(self):
-        "Return the C{(address, port)} of the remote host."
+    def getContentLength(self):
         raise NotImplementedError()
 
     def _getPostData(self):
@@ -83,17 +106,21 @@ class Request(object):
         if contentType not in ctypes:
             return {}
         fs =  cgi.FieldStorage(self._getReadFd(), self.headers,
-                           environ = {'REQUEST_METHOD' : self._getHttpMethod()})
+                           environ = {'REQUEST_METHOD' : self.method})
         d = {}
         for key in fs.keys():
             d[key] = fs.getvalue(key)
         return d
 
-    def _getGetData(self):
-        # Side-effect is to set 
-        uri, query = urllib.splitquery(self.unparsedPath)
+    @staticmethod
+    def _splitQuery(path):
+        """
+        Split off any query arguments (GET) from C{path}. Returns the path sans
+        query, and a dictionary of the parsed arguments.
+        """
+        path, query = urllib.splitquery(path)
+        args = {}
         if query:
-            self.unparsedPath = uri
             # Force FieldStorage to parse the query string for us. We need to
             # manufacture a Content-Type that points cgi to the query instead
             # of the body
@@ -105,11 +132,9 @@ class Request(object):
                     headers = headers,
                     environ = { 'REQUEST_METHOD' : 'GET',
                                 'QUERY_STRING' : query})
-            d = {}
             for key in fs.keys():
-                d[key] = fs.getvalue(key)
-            return d
-        return {}
+                args[key] = fs.getvalue(key)
+        return path, args
 
     def url(self, location, *args, **kw):
         root = self.rootController

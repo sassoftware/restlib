@@ -148,15 +148,6 @@ class RestController(_Controller):
     @type urls: C{dict}
     """
 
-    def handle(self, url, request):
-        # FIXME: this is not used in live code anymore.
-        method = request.method
-        controller, remainder, args, kw = self.getController(method, url,
-                                                             (), {})
-        # NOTE: the above could be cached pretty easily.
-        request.unparsedPath = remainder
-        return controller(request, *args, **kw)
-
     def index(self, request, *args, **kwargs):
         raise NotImplementedError
 
