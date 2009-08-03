@@ -21,6 +21,37 @@ log = logging.getLogger(__name__)
 
 
 class Request(object):
+    """
+    Reqest object.  Describes the request that has been sent in to be
+    processed.
+
+    @param req: the underlying request object from the http server.
+    @param path: the piece of the path that has already been processed.
+
+    The Request object is mostly a data dictionary that contains the following
+    user-accessible pieces.
+
+    path: The entire path - everything to the left of the / after the hostname
+    in the url.
+    unparsedPath: The path that is still to be processed.
+    basePath: the parsed path.
+    baseUrl: the basePath with the protocol, port and host prepended.
+    host: the host.
+    method: the http method that was used - e.g. GET, POST, DELETE, PUT.
+    headers: request headers that were sent.
+    GET: any query string passed in, stored in a dictionary
+    POST: any query string passed in via the request body
+
+    Beyond that, request objects also have the following methods:
+    url, read, _getReadFd, getContentLength.
+
+    Url allows you to construct a url that contains the appropriate path
+    for this request.  Read allows you to read the body of the request, if it
+    has not already been read in as a part of creating the POST field.
+    _getReadFd allows you to control the reading directly and getContentLength
+    tells you how much data is expected to be uploaded.
+    """
+
     # The root controller currently serving this request. This is set
     # externally by the handler.
     rootController = None
@@ -93,12 +124,26 @@ class Request(object):
         raise NotImplementedError()
 
     def _getReadFd(self):
+        """
+        Returns a file descriptor for the socket that contains the current
+        request.
+        """
         raise NotImplementedError()
 
     def getContentLength(self):
-        raise NotImplementedError()
+        """
+        Returns the expected content length to be read from the current
+        request.
+        """
+        return int(self.headers.get('content-length', 0))
 
     def _getPostData(self):
+        """
+        Internal.  Reads in the body from the current request and converts
+        it into a form dictionary, which it returns.  Only applies if the
+        content type for the
+        request is multipart/form-data or application/x-www-form-urlencoded.
+        """
         # cgi will read the body when it doesn't recognize the content type
         ctypes = set(['multipart/form-data',
                       'application/x-www-form-urlencoded'])
@@ -137,6 +182,20 @@ class Request(object):
         return path, args
 
     def url(self, location, *args, **kw):
+        """
+        Takes a location as described by the url dict entries in the root
+        controller for the request.  Traverse controllers building up the
+        url that is required to get there.  If more parameters are presented
+        than there are location components, the additional parameters will be
+        appended on as sub directories.
+
+        The final position arg may be a tuple instead of a string, in which
+        case it will be converted into a querystring.
+
+        @param baseUrl: allows a different initial url to be started with.
+        This may be needed if you want to switch from http to https, for
+        example.  Keyword only.
+        """
         root = self.rootController
         params = list(args)
         baseUrl = kw.pop('baseUrl', None)
@@ -146,34 +205,41 @@ class Request(object):
             baseUrl = baseUrl[:-1]
         url = [baseUrl]
         if location:
-            location = location.split('.')
-
-        def toUtf(x):
-            if isinstance(x, unicode):
-                return x.encode('utf8')
-
-            return x
-
-        def extend(x):
-            if type(x) is list:
-                url[-1] += "?"
-                url[-1] += ("&".join( "%s=%s" %
-                        (k, urllib.quote(toUtf(v))) for (k, v) in x))
-            else:
-                url.append(urllib.quote(toUtf(x)))
-
-        while location:
-            if root.modelName:
-                extend(params[0])
-                params = params[1:]
-            extend(location[0])
-            root = root.urls[location[0]]
-            location = location[1:]
+            # traverse controllers, adding in model parameter
+            # as needed.
+            for part in location.split('.'):
+                if root.modelName:
+                    url.append(_encode(params[0]))
+                    params = params[1:]
+                url.append(_encode(part))
+                # update what we consider "root" as we traverse the tree.
+                root = root.urls[part]
 
         if params:
             for param in params:
-                extend(param)
+                if isinstance(param, (list, tuple)):
+                    # don't create new entry because we don't want an additional
+                    # / before the ? on the end.
+                    url[-1] += _createQuerystring(param)
+                else:
+                    url.append(_encode(param))
         elif getattr(root, 'modelName', None):
             # no model or we're getting the index.
-            extend('')
+            url.append('')
         return '/'.join(url)
+
+def _encode(param):
+    """
+    Ensures the parameter is url-safe.
+    """
+    if isinstance(param, unicode):
+        return urllib.quote(param.encode('utf8'))
+    return urllib.quote(param)
+
+def _createQuerystring(query_tuples):
+    """
+    Given a list of (k,v) query tuples, will convert them into a query string
+    to be used in a url.
+    """
+    return "?" + ("&".join( "%s=%s" %
+                  (k, _encode(v)) for (k, v) in query_tuples))

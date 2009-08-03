@@ -45,16 +45,23 @@ class SimpleHttpRequest(request.Request):
             size = self.getContentLength()
         return self._req.rfile.read(size)
 
-    def getContentLength(self):
-        return int(self.headers.get('content-length', 0))
 
 
 class SimpleHttpHandler(handler.HttpHandler):
     requestClass = SimpleHttpRequest
 
     def handle(self, simple_req, pathPrefix=''):
+        """
+        Entry point for restlib from SimpleHttpServer.
+        """
+        # convert from simplehttp request to restlib Request.
         request = self.requestClass(simple_req, pathPrefix)
+
+        # this does the routing and rendering.
         response = self.getResponse(request)
+
+        # convert back from restlib.response.Response to what SimplehttpServer
+        # needs.
         simple_req.send_response(response.status, response.message)
         for header, value in response.headers.items():
             simple_req.send_header(header, value)
@@ -84,6 +91,15 @@ class SimpleHttpHandler(handler.HttpHandler):
         simple_req.connection.shutdown(socket.SHUT_WR)
 
 def serve(port, root_controller, callbacks=None):
+    """
+    Fast way to serve via a SimpleHttpRequest.
+    @param port: port to serve on.
+    @param root_controller: instance of subclass of
+    restlib.controller.Controller
+    @param callbacks: list of callback objects.  Each should have an attribute
+    of any of processRequest, processResponse, processMethod, or
+    processTraceback.
+    """
     _handler = SimpleHttpHandler(root_controller)
     if callbacks:
         for callback in callbacks:
@@ -98,4 +114,3 @@ def serve(port, root_controller, callbacks=None):
 
     server = BaseHTTPServer.HTTPServer(('', port), BaseRESTHandler)
     server.serve_forever()
-

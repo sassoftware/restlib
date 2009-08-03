@@ -19,6 +19,10 @@ except ImportError:
 from restlib.http import handler, request
 
 class ModPythonRequest(request.Request):
+
+    # implementation details for converting from a mod_python request
+    # object into a standard restlib Request.
+
     def _setProperties(self):
         self.headers = self._req.headers_in
         self.method = self._req.method
@@ -28,9 +32,6 @@ class ModPythonRequest(request.Request):
         if size == -1:
             size = self.getContentLength()
         return self._req.read(size)
-
-    def getContentLength(self):
-        return int(self.headers.get('content-length', 0))
 
     def _getRawPath(self):
         """
@@ -68,8 +69,22 @@ class ModPythonHttpHandler(handler.HttpHandler):
     requestClass = ModPythonRequest
 
     def handle(self, req, pathPrefix=''):
+        """
+        Entry point for using restlib with mod_python requests.
+        Call this with a mod_python request and a base_url (those parts of the
+        url that have already been parsed).
+
+        @param req: mod_python request object
+        @param url: base url that has already been parsed.  This part will
+        be ignored by restlib.
+        """
+        # convert from mod_python request to restlib request
         request = self.requestClass(req, pathPrefix)
+
+        # do all actual processing of request.
         response = self.getResponse(request)
+
+        # send restlib response back to mod_python
         length = response.getLength()
         if length is not None:
             response.headers['content-length'] = str(length)
@@ -83,6 +98,7 @@ class ModPythonHttpHandler(handler.HttpHandler):
             if response.getFilePath():
                 req.sendfile(response.getFilePath())
             else:
+                # TODO: support iterating over content if content is iterable
                 rawResponse = response.get()
                 if type(rawResponse) is str:
                     req.write(rawResponse)

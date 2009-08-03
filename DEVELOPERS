@@ -1,0 +1,52 @@
+
+restlib is meant to be a very light framework for writing rest-style APIs.  It
+does not have any support for templating or database manipulation.  The style is meant to make extension easy - all display and manipulation of a single object is in a single place, so when you need to add something new, the place to put it should be clear.
+
+The code is around 500 lines of python, so it should be easy to modify as necessary.  There are a few complicated bits where most of the action is.
+
+1.  The controller
+
+The controller is the heart of restlib.  It determines what function should be
+called to respond to a request, or, as is often the case, delegates the
+decision to another sub-controller.
+
+The controller has default methods for responding to GET/POST/PUT/DELETE
+methods.  Additional methods could be added easily.
+
+Controllers should only be instantiated once and should generally be able to
+persist between http requests.  Any information that is specific to a
+particular request should be attached to the request itself.
+
+Controllers separate the retrieving of the method to be called to process the
+response from actually calling the function to generate the response.  This
+means that while in general the function is a method on the controller object,
+this is not a requirement.
+
+More detail about controllers can be found in the file itself and in the
+example.
+
+2. The handler
+The handler is the entry point to restlib.  It takes a request from the http
+server (currently either SimpleHTTPServer or mod_python) and converts it into
+a standard representation, and manages the calling of any callbacks on the way
+to passing off the request to the controller.
+
+The callbacks are an important part of restlib.  They allow arbitrary code to
+be called for every single request, and allow for generalized processing of
+authentication objects, standardized rendering of objects into different
+serialization formats, and exception handling.
+
+3. The request
+The request is a standard representation of a request object, based on
+django's representation.  It has a GET object that contains any parameters
+passed as a part of the url, and a POST object that contains POST request
+objects.  It also contains a method for generating urls based on the structure
+of the controller objects.  The url method is associated with the request
+object because it is useful to have the url method around in places where
+passing the controller would be cumbersome, and it is necessary to have some
+representation of the restlib structure for the purposes of knowing the base
+url and the structure of the site.  This is a case of practicality beating
+purity.
+
+That's about it for major portions of the restlib.  If you understand how
+those portions work you understand how restlib works.  

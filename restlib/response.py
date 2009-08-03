@@ -16,7 +16,19 @@ import os
 
 
 class Response(object):
+    """
+    Response class contains the Response to be sent back from
+    a request.
+    @param content: content to be returned.  Can be string or list (but not
+    other iterables, as we need to be able to get the len() of the response).
+    @param content_type: mime type of content.
+    @param status: standard integer status code.  Default is 200
+    @param message: standard http message to be sent with status code.
+    @param headers: dictionary of extra headers to send with response.
+    """
     status = 200
+    # python has already done the work of converting from status id to
+    # short response message for us.
     responses = BaseHTTPServer.BaseHTTPRequestHandler.responses
 
     def __init__(self, content='', content_type='text/html', status=None,
@@ -29,6 +41,7 @@ class Response(object):
         self.headers = headers
         self.headers['content-type'] = content_type
         if status:
+            # defaults to class variable
             self.status = status
         if message is None:
             message = self.responses[self.status][0]
@@ -41,6 +54,7 @@ class Response(object):
 
     def getLength(self):
         # __len__ is a bad idea as it affect __nonzero__
+        # NOTE: this removes the advantage of having an iterable
         return sum([len(x) for x in self.response])
 
     def write(self, txt):
@@ -78,13 +92,18 @@ class CreatedResponse(RedirectResponse):
 
 
 class FileResponse(Response):
+    """
+    Returns a response directly from a file directly.  Other paramters
+    same as those in a standard response
+    @param path: path to the file on disk.
+    """
 
     def getLength(self):
-        # sendfile sends everything, this makes us work the same on
+        # mod_python.sendfile sends everything, this makes us work the same on
         # simplehttp server
         return os.stat(self.path).st_size
 
-    def __init__(self, path=None, content_type='application/octet-stream',
+    def __init__(self, path, content_type='application/octet-stream',
                  status=None, message=None, headers=None):
         Response.__init__(self, content_type=content_type, status=status,
                           message=message, headers=headers)

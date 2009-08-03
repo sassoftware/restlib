@@ -11,6 +11,11 @@
 # or fitness for a particular purpose. See the Common Public License for
 # full details.
 #
+"""
+Contains BasicAuthCallback, a simple authentication callback.  Without
+subclassing, it attaches (name, password) to the request object.  A subclass
+could use the processRequest method to authenticate the user's information.
+"""
 import base64
 
 from restlib import response
@@ -18,6 +23,9 @@ from restlib import response
 class BasicAuthCallback(object):
 
     def getAuth(self, request):
+        """
+        Parses the standard auth headers.
+        """
         if not 'Authorization' in request.headers:
             return None
         type, user_pass = request.headers['Authorization'].split(' ', 1)
@@ -25,9 +33,17 @@ class BasicAuthCallback(object):
         return (user_name, password)
 
     def processRequest(self, request):
+        """
+        Callback hook, called by restlib.
+        """
         auth = self.getAuth(request)
         request.auth = auth
         return self.processAuth(request)
 
     def processAuth(self, request):
+        """
+        Hook for extending BasicAuthCallback.  If the user cannot be
+        authenticated, a Response object can be returned here to stop
+        the calling of other methods.
+        """
         return None

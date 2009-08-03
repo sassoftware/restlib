@@ -1,0 +1,21 @@
+These are the things I'd like to see happen to restlib:
+
+* There should be a standard way to convert to json and xml packaged with restlib.  That shouldn't have to be recreated from package to package.  Something similar to ActiveRecord would work well.  The code in mint would be a good starting point as well (though it needs to be cleaned up), although if there's a standard python implementation that we could take advantage of that would be great.
+
+* Integrate with pylons or django.  Pylons and django both will allow you to integrate your custom url handling with them.  Pylons has the advantage that it uses SQLAlchemy as its base code, which means that it is much more easy to convert old schemas to use it (SQLAlchemy is quite flexible in that respect and meant to be for people who are happier working closely with their database).  While increasing the total code, it would reduce the amount of code we had to maintain and likely provide extra tools for free.  I expect that this would not actually be that much work and might open up faster development for future additions to a project that uses restlib.
+
+* Fix the initialization of controller objects.  The current way they are initialized is difficult to understand.  I would likely separate out the setting of their parent relationships with the passing in of user parameters.  Alternatively, I'd create a shared "settings" object and move all user-defined parameters to that object.  The goal is to not require the developer to pass in some of the strange parameters to restlib that are currently required.
+
+* Split out the selection of the sub-controller from the selection of the method to call.  This is a bit complicated to explain.  In restlib, there is a root controller, and there are sub controllers.  Given a url with many parts, there is some sub-controller that contains the function that should return the url.  Ideally, there would be one method that returns the sub-controller that contains the url, and a second method that is called on that sub-controller to return the method that will display the view.  This would make it much easier to override the method that displays a particular view at the sub-controller level.  Currently that's very difficult to do.
+
+* Caching.  If the speed of restlib ever becomes an issue or caching ever becomes a concern, it should be easy to integrate caching in to restlib's callbacks.
+
+* Testsuite.  There is currently no testsuite for restlib, slowing development.  Given the small size of restlib and its audience, this is not a huge issue but it has caused some headaches.
+
+* Logger.  I'd remove the logger from restlib or integrate it further.
+  Currently it is only used in one place.  It should also have a default logger
+  instead of None.
+
+* Callbacks.  It feels like assigning callbacks is hairy annoying; they are the only reason you have to instantiate the handler yourself.  I'd like to see that changed.
+
+* Request variables.  Things like databases may need to be reopened per request or may be static.  Currently they are assigned to the controller object.  In django their global.  I don't like either of those options - I think perhaps a context object would work well.
