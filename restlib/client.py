@@ -36,7 +36,7 @@ class Client(object):
         self.scheme = None
         self.user = None
         self.passwd = None
-        self.host = None
+        self.hostport = None
         self.port = None
         self.path = None
         self.headers = headers or {}
@@ -47,10 +47,7 @@ class Client(object):
 
         host, self.path = urllib.splithost(url)
         if host:
-            user_passwd, host = urllib.splituser(host)
-            self.host, self.port = urllib.splitport(host)
-            if self.port is not None:
-                self.port = int(self.port)
+            user_passwd, self.hostport = urllib.splituser(host)
             if user_passwd:
                 self.user, self.passwd = urllib.splitpasswd(user_passwd)
 
@@ -68,7 +65,7 @@ class Client(object):
             cls = self.HTTPConnection
         else:
             cls = self.HTTPSConnection
-        self._connection = cls(self.host, port = self.port)
+        self._connection = cls(self.hostport)
         self._connection.connect()
         return self
 
