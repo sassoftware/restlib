@@ -296,20 +296,30 @@ class RestController(_Controller):
     processed as if there were no url remaining to be parsed.
     """
 
-    def index(self, request, *args, **kwargs):
-        raise NotImplementedError
-
-    def process(self, request, *args, **kwargs):
-        raise NotImplementedError
-
+    ## Base methods
+    # POST
     def create(self, request, *args, **kwargs):
         raise NotImplementedError
+    # GET (also non-model)
+    def index(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # PUT
+    def update_all(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # DELETE
+    def destroy_all(self, request, *args, **kwargs):
+        raise NotImplementedError
 
+    ## Model & non-model methods
+    # POST
+    def process(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # GET (model only)
     def get(self, request, *args, **kwargs):
         raise NotImplementedError
-
-    def destroy(self, request, *args, **kwargs):
-        raise NotImplementedError
-
+    # PUT
     def update(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # DELETE
+    def destroy(self, request, *args, **kwargs):
         raise NotImplementedError
