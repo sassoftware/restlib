@@ -76,7 +76,7 @@ class _Controller(object):
         return request.url(location, *args)
 
     def splitId(self, url):
-        match = re.match('/?(%s)/?(.*|)' % self.modelRegex, urllib.unquote(url))
+        match = re.match('/?(%s)/?(.*|)' % self.modelRegex, url)
         if match:
             return match.groups()
         raise NotImplementedError
@@ -92,6 +92,7 @@ class _Controller(object):
         # to the right depth (getController)
         # and a second part that assumes that the current controller 
         # is the right one (getView body)
+        url = urllib.unquote(url)
         return self.getController(method, url, (), {})
 
     def getController(self, method, url, args, kwargs):
