@@ -37,7 +37,6 @@ class Client(object):
         self.user = None
         self.passwd = None
         self.hostport = None
-        self.port = None
         self.path = None
         self.headers = headers or {}
 
