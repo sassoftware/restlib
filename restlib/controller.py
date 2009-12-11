@@ -76,7 +76,7 @@ class _Controller(object):
         return request.url(location, *args)
 
     def splitId(self, url):
-        match = re.match('/?(%s)/?(.*|)' % self.modelRegex, urllib.unquote(url))
+        match = re.match('/?(%s)/?(.*|)' % self.modelRegex, url)
         if match:
             return match.groups()
         raise NotImplementedError
@@ -92,6 +92,7 @@ class _Controller(object):
         # to the right depth (getController)
         # and a second part that assumes that the current controller 
         # is the right one (getView body)
+        url = urllib.unquote(url)
         return self.getController(method, url, (), {})
 
     def getController(self, method, url, args, kwargs):
@@ -296,20 +297,30 @@ class RestController(_Controller):
     processed as if there were no url remaining to be parsed.
     """
 
-    def index(self, request, *args, **kwargs):
-        raise NotImplementedError
-
-    def process(self, request, *args, **kwargs):
-        raise NotImplementedError
-
+    ## Base methods
+    # POST
     def create(self, request, *args, **kwargs):
         raise NotImplementedError
+    # GET (also non-model)
+    def index(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # PUT
+    def update_all(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # DELETE
+    def destroy_all(self, request, *args, **kwargs):
+        raise NotImplementedError
 
+    ## Model & non-model methods
+    # POST
+    def process(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # GET (model only)
     def get(self, request, *args, **kwargs):
         raise NotImplementedError
-
-    def destroy(self, request, *args, **kwargs):
-        raise NotImplementedError
-
+    # PUT
     def update(self, request, *args, **kwargs):
+        raise NotImplementedError
+    # DELETE
+    def destroy(self, request, *args, **kwargs):
         raise NotImplementedError
