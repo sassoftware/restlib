@@ -16,6 +16,11 @@ import base64
 import httplib
 import urllib
 
+from conary.lib import util
+
+class ConnectionError(Exception):
+    pass
+
 class ResponseError(Exception):
     def __init__(self, status, reason, headers, response):
         Exception.__init__(self)
@@ -65,17 +70,36 @@ class Client(object):
         else:
             cls = self.HTTPSConnection
         self._connection = cls(self.hostport)
-        self._connection.connect()
+        try:
+            self._connection.connect()
+        except httplib.socket.error, e:
+            raise ConnectionError(str(e))
         return self
 
-    def request(self, method, body=None, headers=None):
+    def request(self, method, body=None, headers=None, contentLength=None,
+            callback=None):
         hdrs = self.headers.copy()
         hdrs.update(headers or {})
         if self.user is not None and self.passwd is not None:
             user_pass = base64.b64encode('%s:%s' % (self.user, self.passwd))
             hdrs['Authorization'] = 'Basic %s' % user_pass
-        self._connection.request(method, self.path, body = body,
-                                 headers = hdrs)
+        if hasattr(body, "read"):
+            # We need to stream
+            if contentLength is None:
+                # Determine body size
+                body.seek(0, 2)
+                contentLength = body.tell()
+                body.seek(0, 0)
+            hdrs['Content-Length'] = str(contentLength)
+            self._connection.putrequest(method, self.path)
+            for hdr, value in hdrs.iteritems():
+                self._connection.putheader(hdr, value)
+            self._connection.endheaders()
+            util.copyfileobj(body, self._connection, sizeLimit=contentLength,
+                callback=callback)
+        else:
+            self._connection.request(method, self.path, body = body,
+                                     headers = hdrs)
         resp = self._connection.getresponse()
         if resp.status != 200:
             raise ResponseError(resp.status, resp.reason, resp.msg, resp)
