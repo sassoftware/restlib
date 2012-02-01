@@ -135,7 +135,7 @@ class Request(object):
         Returns the expected content length to be read from the current
         request.
         """
-        return int(self.headers.get('content-length', 0))
+        return int(self.headers.get('content-length') or 0)
 
     def _getPostData(self):
         """
