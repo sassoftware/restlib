@@ -1,0 +1,20 @@
+#
+# Copyright (c) rPath, Inc.
+# This file is distributed under the terms of the MIT License.
+# A copy is available at http://www.rpath.com/permanent/mit-license.html
+#
+
+class Restlib(PackageRecipe):
+    name = 'restlib'
+    version = ''
+
+    buildRequires = [
+        'make:runtime',
+        'python:devel',
+        'python:lib',
+        'util-linux:runtime'
+    ]
+
+    def setup(r):
+        r.addMercurialSnapshot('http://hg.rpath.com/restlib')
+        r.MakeInstall()
