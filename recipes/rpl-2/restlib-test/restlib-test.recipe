@@ -1,0 +1,24 @@
+#
+# Copyright (c) rPath, Inc.
+#
+
+loadSuperClass('testpackage=testbits.rb.rpath.com@rpl:1')
+class RestlibTest(TestPackageRecipe):
+    name = 'restlib-test'
+    version = '0.1'
+
+    Flags.coverage = True
+
+    # testpackage configuration
+    codeDirs = {
+        'restlib' : '%(libdir)s/python2.4/site-packages/restlib',
+    }
+
+    buildRequires = [
+        'restlib:python',
+    ]
+
+    testDir = '.'
+
+    def setupSource(r):
+        r.addMercurialSnapshot()
