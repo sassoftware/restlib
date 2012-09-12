@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Copyright (c) rPath, Inc.
 #
@@ -46,7 +45,3 @@ class RequestTest(testcase.TestCase):
         req = mock_objects.get_request(book_site.SiteController(), '/?param=blah;param=blah2;param2=foo')
         self.failUnlessEqual(req.GET['param'], ['blah', 'blah2'])
         self.failUnlessEqual(req.GET['param2'], 'foo')
-
-
-if __name__ == '__main__':
-    sys.exit(testsuite.main())

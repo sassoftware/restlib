@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Copyright (c) rPath, Inc.
 #
@@ -121,6 +120,3 @@ class FakeModPythonReq(object):
 
     def read(self, *args, **kwargs):
         return self._rfile.read(*args, **kwargs)
-
-if __name__ == '__main__':
-    sys.exit(testsuite.main())

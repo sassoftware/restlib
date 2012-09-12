@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # Copyright (c) rPath, Inc.
 #
@@ -60,7 +59,3 @@ class HandlerTest(testcase.TestCase):
         self.assertEquals(CallbackRecorder.callbacks, ['request 1', 'request 2',
                                                        'method 1', 'method 2',
                                                        'response 2', 'response 1'])
-
-
-if __name__ == '__main__':
-    sys.exit(testsuite.main())
