@@ -15,8 +15,14 @@
 #
 
 
-import os
-import sys
-sys.path.append('..')
-import epdb
-epdb.st()
+loadSuperClass('testpackage')
+class RestlibTest(TestPackageRecipe):
+    name = 'restlib-test'
+    version = '0.1'
+
+    buildRequires = [
+        'restlib:python',
+    ]
+
+    def setupSource(r):
+        r.addMercurialSnapshot()
