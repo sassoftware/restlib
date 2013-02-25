@@ -28,7 +28,7 @@ class WebObRequest(request.Request):
     def read(self, size=-1):
         if size == -1:
             size = self.getContentLength()
-        return self._req.read(size)
+        return self._req.body_file.read(size)
 
     def _getRawPath(self):
         base = self._req.host_url
