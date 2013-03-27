@@ -63,7 +63,7 @@ class WSGIHandler(handler.HttpHandler):
             webresp.body_file = open(response.getFilePath(), 'rb')
         else:
             rawResponse = response.get()
-            if response.status != 200 and not rawResponse:
+            if response.status >= 400 and not rawResponse:
                 rawResponse = '<h1>%s</h1>' % webresp.status
 
             if not isinstance(rawResponse, basestring):
