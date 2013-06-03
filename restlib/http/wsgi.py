@@ -28,7 +28,7 @@ class WebObRequest(request.Request):
     def read(self, size=-1):
         if size == -1:
             size = self.getContentLength()
-        return self._req.read(size)
+        return self._req.body_file.read(size)
 
     def _getRawPath(self):
         base = self._req.host_url
@@ -63,7 +63,7 @@ class WSGIHandler(handler.HttpHandler):
             webresp.body_file = open(response.getFilePath(), 'rb')
         else:
             rawResponse = response.get()
-            if response.status != 200 and not rawResponse:
+            if response.status >= 400 and not rawResponse:
                 rawResponse = '<h1>%s</h1>' % webresp.status
 
             if not isinstance(rawResponse, basestring):
