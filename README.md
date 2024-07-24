@@ -1,6 +1,8 @@
 Welcome to restlib!
 ===================
 
+**Archived projet: This project is no longer under active development and was archived on 2024-07-24.**
+
 Overview
 --------
 
